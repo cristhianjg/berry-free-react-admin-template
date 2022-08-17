@@ -18,7 +18,8 @@
             "experimentalObjectRestSpread": true,
             "impliedStrict": true
         },
-        "ecmaVersion": 12
+        "ecmaVersion": 12,
+        "requireConfigFile": false
     },
     "plugins": ["prettier", "react", "react-hooks"],
     "rules": {

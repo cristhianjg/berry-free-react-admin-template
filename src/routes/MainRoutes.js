@@ -6,6 +6,11 @@ import Loadable from 'ui-component/Loadable';
 
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const DashboardAdmin = Loadable(lazy(() => import('views/dashboard/Admin')));
+
+// profile cards
+const ProfileCards = Loadable(lazy(() => import('views/profile-cards')));
+const EditCard = Loadable(lazy(() => import('views/edit-card')));
 
 // utilities routing
 const UtilsTypography = Loadable(lazy(() => import('views/utilities/Typography')));
@@ -33,6 +38,23 @@ const MainRoutes = {
                 {
                     path: 'default',
                     element: <DashboardDefault />
+                },
+                {
+                    path: 'admin',
+                    element: <DashboardAdmin />
+                }
+            ]
+        },
+        {
+            path: 'profile-cards',
+            children: [
+                {
+                    path: 'default',
+                    element: <ProfileCards />
+                },
+                {
+                    path: 'edit',
+                    element: <EditCard />
                 }
             ]
         },
