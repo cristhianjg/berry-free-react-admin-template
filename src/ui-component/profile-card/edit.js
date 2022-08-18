@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef } from 'react';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -7,45 +7,20 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-/*import InstagramIcon from '@mui/icons-material/Instagram';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import EmailIcon from '@mui/icons-material/EmailOutlined';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import YouTubeIcon from '@mui/icons-material/YouTube';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import WhatsappIcon from '@mui/icons-material/WhatsApp';
-import PhoneIcon from '@mui/icons-material/Phone';*/
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import PersonAddIcon from '@mui/icons-material/PersonAddAlt';
 import AddIcon from '@mui/icons-material/Add';
 import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CircularProgress from '@mui/material/CircularProgress';
-import EditIcon from '@mui/icons-material/Edit';
-import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
-import Icon from '@mui/material/Icon';
 import Modal from '@mui/material/Modal';
-
 import { CardHeader } from '@mui/material';
-import { Stack, width } from '@mui/system';
-
-import { forwardRef } from 'react';
-
+import { Stack } from '@mui/system';
 import { profileCardVariants, profileCardStyles } from './styles';
-
 import InputWithIcon from './inputs/input-with-icon';
-
 import { convertArrayToObject } from 'utils/array-functions';
-import { getSocialIcon } from 'utils/icon-functions';
-
 import SocialIcon from 'ui-component/social-icon';
+import SelectionGrid from 'ui-component/selection-grid';
+import { SOCIAL_ITEMS } from 'constants/socials';
 
 const useStyles = profileCardStyles;
 
@@ -120,6 +95,26 @@ const ProfileCardEdit = forwardRef((props, ref) => {
         p: 4
     };
 
+    const socialOptions = SOCIAL_ITEMS.map((item) => {
+        const iconColor = '#999';
+        const label = item[0].toUpperCase() + item.substring(1);
+        const itemProps = {
+            name: item,
+            styles: { color: iconColor, mr: 1, my: 0.5 }
+        };
+
+        return (
+            <Button
+                startIcon={<SocialIcon {...itemProps} />}
+                onClick={() => {
+                    console.log(label);
+                }}
+            >
+                {label}
+            </Button>
+        );
+    });
+
     return (
         <>
             <Box className={classes.profileCardContainer} maxWidth="false" ref={ref}>
@@ -179,12 +174,7 @@ const ProfileCardEdit = forwardRef((props, ref) => {
                 aria-describedby="modal-modal-description"
             >
                 <Box sx={modalStyles}>
-                    <Typography id="modal-modal-title" variant="h6" component="h2">
-                        Text in a modal
-                    </Typography>
-                    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                        Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-                    </Typography>
+                    <SelectionGrid items={socialOptions} />
                 </Box>
             </Modal>
         </>
