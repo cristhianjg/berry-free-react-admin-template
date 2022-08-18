@@ -4,6 +4,7 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
@@ -38,9 +39,11 @@ import { profileCardVariants, profileCardStyles } from './styles';
 const useStyles = profileCardStyles;
 
 const ProfileCard = forwardRef((props, ref) => {
-    const { firstName, lastName, picture, variant } = props;
+    const { firstName, lastName, summary, picture, socialItems, variant } = props;
 
+    console.log('summary: ', summary);
     console.log('variant: ', variant);
+    console.log('social items from card: ', socialItems);
 
     const styleProps = profileCardVariants[variant] || profileCardVariants.xxs;
 
@@ -78,7 +81,9 @@ const ProfileCard = forwardRef((props, ref) => {
                         <Typography gutterBottom variant="h1" component="h4" sx={{ marginTop: '-22px' }}>
                             {lastName}
                         </Typography>
-                        <Typography className="summary">This is a media card. You can use this section to describe the content.</Typography>
+                        <Typography gutterBottom variant="h5" component="h5" sx={{ textAlign: 'justify' }}>
+                            {summary}
+                        </Typography>
                     </Stack>
 
                     <List className="social-networks">

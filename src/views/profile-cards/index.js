@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid';
 import MainCard from 'ui-component/cards/MainCard';
 import ProfileCard from 'ui-component/profile-card';
+import { Link } from 'react-router-dom';
 
 const ProfileCardsList = () => {
     const [profileCards, setProfileCards] = useState([]);
@@ -33,7 +34,9 @@ const ProfileCardsList = () => {
             <Grid container spacing={2}>
                 {profileCards.map((props) => (
                     <Grid item xs={3} key={props.id}>
-                        <ProfileCard {...props} variant="xxs" />
+                        <Link to={`../edit/${props.id}`}>
+                            <ProfileCard {...props} variant="xxs" />
+                        </Link>
                     </Grid>
                 ))}
             </Grid>

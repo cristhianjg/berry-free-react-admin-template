@@ -53,7 +53,7 @@ const MainRoutes = {
                     element: <ProfileCards />
                 },
                 {
-                    path: 'edit',
+                    path: 'edit/:id',
                     element: <EditCard />
                 }
             ]

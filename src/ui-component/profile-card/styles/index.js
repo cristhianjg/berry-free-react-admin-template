@@ -58,8 +58,12 @@ export const profileCardStyles = makeStyles({
             },
 
             '& .card-actions': {
-                display: props.cardActions.display,
-                padding: '0px 16px 16px'
+                display: props.cardActions.default.display,
+                padding: '0px 16px 16px',
+
+                '&.edit-card': {
+                    display: props.cardActions.editCard.display
+                }
             }
         }
     })
@@ -100,7 +104,12 @@ export const profileCardVariants = {
             display: 'none'
         },
         cardActions: {
-            display: 'none'
+            default: {
+                display: 'none'
+            },
+            editCard: {
+                display: 'none'
+            }
         }
     },
     xs: {
@@ -138,7 +147,12 @@ export const profileCardVariants = {
             display: 'block'
         },
         cardActions: {
-            display: 'none'
+            default: {
+                display: 'none'
+            },
+            editCard: {
+                display: 'block'
+            }
         }
     },
     sm: {
@@ -176,7 +190,12 @@ export const profileCardVariants = {
             display: 'block'
         },
         cardActions: {
-            display: 'none'
+            default: {
+                display: 'none'
+            },
+            editCard: {
+                display: 'block'
+            }
         }
     }
 };
