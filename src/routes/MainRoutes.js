@@ -10,7 +10,7 @@ const DashboardAdmin = Loadable(lazy(() => import('views/dashboard/Admin')));
 
 // profile cards
 const ProfileCards = Loadable(lazy(() => import('views/profile-cards')));
-const EditCard = Loadable(lazy(() => import('views/edit-card')));
+const CreateEditCard = Loadable(lazy(() => import('views/create-edit-card')));
 
 // utilities routing
 const UtilsTypography = Loadable(lazy(() => import('views/utilities/Typography')));
@@ -53,8 +53,12 @@ const MainRoutes = {
                     element: <ProfileCards />
                 },
                 {
+                    path: 'create',
+                    element: <CreateEditCard />
+                },
+                {
                     path: 'edit/:id',
-                    element: <EditCard />
+                    element: <CreateEditCard />
                 }
             ]
         },

@@ -150,14 +150,9 @@ const profileCardVariants = {
 };
 
 const ProfileCardThumbnail = forwardRef((props, ref) => {
-    console.log(props);
-
     const { firstName, lastName, picture, variant } = props;
-
     const styleProps = profileCardVariants[variant] || profileCardVariants.xxs;
     const classes = useStyles(styleProps);
-
-    console.log(typeof classes);
 
     return (
         <Container className={classes.profileCardContainer} maxWidth="false" ref={ref}>

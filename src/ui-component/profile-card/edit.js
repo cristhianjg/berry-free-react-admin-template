@@ -1,22 +1,21 @@
 import { useEffect, useState, forwardRef } from 'react';
-import Button from '@mui/material/Button';
+
+// New components
+import { ProfileCard } from './profile-card.component';
+import { ProfileCardMedia } from './profile-card-media.component';
+import { ProfileCardContent } from './profile-card-content.component';
+import { ProfileCardAvatar } from './profile-card-avatar.component';
+import { ProfileCardInputFields } from './profile-card-input-fields.component';
+import { ProfileCardSocialItems } from './profile-card-social-items.component';
+
+// Old components
+import { Button } from '@mui/material';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import AddIcon from '@mui/icons-material/Add';
-import Avatar from '@mui/material/Avatar';
-import CircularProgress from '@mui/material/CircularProgress';
 import Modal from '@mui/material/Modal';
-import { CardHeader } from '@mui/material';
-import { Stack } from '@mui/system';
 import { profileCardVariants, profileCardStyles } from './styles';
-import InputWithIcon from './inputs/input-with-icon';
 import { convertArrayToObject } from 'utils/array-functions';
 import SocialIcon from 'ui-component/social-icon';
 import SelectionGrid from 'ui-component/selection-grid';
@@ -25,64 +24,178 @@ import { SOCIAL_ITEMS } from 'constants/socials';
 const useStyles = profileCardStyles;
 
 const ProfileCardEdit = forwardRef((props, ref) => {
-    const { firstName, lastName, summary, picture, socialItems, variant } = props;
-    const [socials, setSocials] = useState({});
+    const { id, firstName, lastName, summary, picture, background, socialItems, variant } = props;
+    const [socialItemInputs, setSocialItemInputs] = useState({});
+    const [socialInputsLoaded, setSocialInputsLoaded] = useState(false);
     const [socialsGridOpen, setSocialsGridOpen] = useState(false);
+    const [savedSuccessfully, setSavedSuccessfully] = useState(false);
+    const [pendingSave, setPendingSave] = useState('none');
+    const [newData, setNewData] = useState({});
 
     const styleProps = profileCardVariants[variant] || profileCardVariants.xxs;
 
     const classes = useStyles(styleProps);
 
     useEffect(() => {
-        if (socialItems.length > Object.keys(socials).length) {
-            setSocials(convertArrayToObject(socialItems, 'type'));
+        if (!socialInputsLoaded) {
+            if (socialItems?.length > Object.keys(socialItemInputs)?.length) {
+                setSocialItemInputs(convertArrayToObject(socialItems, 'type'));
+            }
+            if (socialItems?.length === Object.keys(socialItemInputs)?.length) {
+                setSocialInputsLoaded(true);
+            }
         }
-    }, [socialItems, socials]);
+    }, [socialItems, socialItemInputs, socialInputsLoaded]);
+
+    const handleUpdateField = (event) => {
+        const { id, value } = event.target;
+
+        // IMPORTANT!!!!
+        // const socialItemInputsCopy = Object.assign({}, socialItemInputs);
+        // the line below does the same as using Object.assign({}, ...). It makes a copy of the object by value not by reference. Very important to update a state on REACT!!!
+        /*const socialItemInputsCopy = { ...socialItemInputs };
+        socialItemInputsCopy[id].account = value;
+        setSocialItemInputs(socialItemInputsCopy);*/
+
+        if (SOCIAL_ITEMS.includes(id)) {
+            // updates socialItemInputs to show changes on UI
+            const socialItemInputsCopy = { ...socialItemInputs };
+            socialItemInputsCopy[id].account = value;
+            setSocialItemInputs(socialItemInputsCopy);
+
+            // updates newData to save changes to API
+            const newDataCopy = { ...newData };
+
+            if (!newDataCopy.hasOwnProperty('socialItems')) {
+                newDataCopy.socialItems = [];
+            }
+
+            /*if (!newDataCopy.socialItems.hasOwnProperty(id)) {
+                newDataCopy.socialItems = [];
+            }
+            
+            newDataCopy.socialItems.push(socialItemInputs[id]);*/
+
+            if (newDataCopy.socialItems.length) {
+                newDataCopy.socialItems = newData.socialItems.filter((socialItem) => socialItem.type != id);
+            }
+            /*    newDataCopy.socialItems.push(socialItemInputs[id]);
+            } else {
+                newDataCopy.socialItems.push(socialItemInputs[id]);
+            }*/
+
+            newDataCopy.socialItems.push(socialItemInputs[id]);
+
+            setNewData(newDataCopy);
+        } else {
+            // updates newData to save changes to API
+            const newDataCopy = { ...newData };
+            newDataCopy[id] = value;
+            setNewData({ ...newDataCopy });
+        }
+
+        setPendingSave('block');
+    };
+
+    const inputFields = [
+        {
+            id: 'firstName',
+            variant: 'standard',
+            label: 'First name',
+            defaultValue: firstName,
+            onChange: handleUpdateField
+        },
+        {
+            id: 'lastName',
+            variant: 'standard',
+            label: 'Last name',
+            defaultValue: lastName,
+            onChange: handleUpdateField
+        },
+        {
+            id: 'summary',
+            variant: 'standard',
+            label: 'Summary',
+            defaultValue: summary,
+            onChange: handleUpdateField
+        }
+    ];
 
     // add label and icon to use in each component
-    for (const key in socials) {
+    for (const key in socialItemInputs) {
         const name = key[0].toUpperCase() + key.substring(1);
-        socials[key]['label'] = name;
-        socials[key]['icon'] = name + 'Icon';
+        socialItemInputs[key]['label'] = name;
+        socialItemInputs[key]['icon'] = name + 'Icon';
     }
 
-    const handleAddSocialItem = () => {
-        console.log('Handle add social item');
+    // add input to enter a new selected social item
+    const handleAddSocialItem = (type) => {
+        const name = type[0].toUpperCase() + type.substring(1);
+
         const newSocial = {
-            type: 'new',
-            icon: 'AppRegistrationIcon',
-            label: 'New',
+            type: type.toLowerCase(),
+            icon: name + 'Icon',
+            label: name,
             account: ''
         };
 
-        socials['new'] = newSocial;
-
-        setSocials({ ...socials, new: newSocial });
-
-        console.log('socials : ', socials);
+        // check if profile already has a social item of the same type
+        if (Object.keys(socialItemInputs).find((socialItemKey) => socialItemKey === newSocial.type)) {
+            alert(`You already have an ${type} account`);
+        } else {
+            setSocialItemInputs({ ...socialItemInputs, [newSocial.type]: newSocial });
+            setPendingSave('block');
+        }
     };
 
-    const RenderSocialItemsList = () => {
-        return Object.keys(socials).map((item, $idx) => {
-            const iconColor = socials[item].type != 'new' ? 'action.active' : 'blue';
+    const handleDeleteField = async (socialItemType) => {
+        const socialItemInputsCopy = { ...socialItemInputs };
 
-            const iconProps = {
-                name: socials[item].type,
-                styles: { color: iconColor, mr: 1, my: 0.5 },
-                onClickFunction: () => {
-                    setSocialsGridOpen(true);
-                    console.log('clicked');
-                }
-            };
+        // update UI
+        delete socialItemInputsCopy[socialItemType];
+        setSocialItemInputs(socialItemInputsCopy);
 
-            return (
-                <InputWithIcon label={socials[item].label} value={socials[item].account} key={$idx}>
-                    <SocialIcon {...iconProps} />
-                </InputWithIcon>
-            );
-        });
+        // update API payload
+        const itemToDelete = socialItemInputs[socialItemType];
+
+        // if itemToDelete does not have 'id' it doesn´t exist on DB and we don´t have to update it
+        if (itemToDelete.hasOwnProperty('id')) {
+            itemToDelete.delete = true;
+
+            const newDataCopy = { ...newData };
+
+            if (!newDataCopy.hasOwnProperty('socialItems')) {
+                newDataCopy.socialItems = [];
+            }
+
+            newDataCopy.socialItems.push(itemToDelete);
+            setNewData({ ...newDataCopy });
+        }
+
+        setPendingSave('block');
     };
 
+    const handleSubmit = async () => {
+        const url = `http://localhost:3022/api/v1/profiles/${id}`;
+
+        await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization:
+                    'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MmU5ODViZjlmMzQ0YjBmYTliMGYzNzQiLCJ1c2VyTmFtZSI6IkNyaXMiLCJ1c2VyUm9sZSI6InVzZXIiLCJpYXQiOjE2NTk3MDY5NzIsImV4cCI6MTY2MjI5ODk3Mn0.dRyWTfRPMRkyZjSGTYnrepiCUl58RAE2Jla1-XnGk0o'
+            },
+            body: JSON.stringify(newData)
+        })
+            .then((response) => response.json())
+            .then(() => {
+                setSavedSuccessfully(true);
+                setPendingSave('none');
+            })
+            .catch((err) => console.error(err));
+    };
+
+    // modal to add a new social item
     const modalStyles = {
         position: 'absolute',
         top: '50%',
@@ -95,7 +208,7 @@ const ProfileCardEdit = forwardRef((props, ref) => {
         p: 4
     };
 
-    const socialOptions = SOCIAL_ITEMS.map((item) => {
+    const socialOptions = SOCIAL_ITEMS.map((item, idx) => {
         const iconColor = '#999';
         const label = item[0].toUpperCase() + item.substring(1);
         const itemProps = {
@@ -107,8 +220,10 @@ const ProfileCardEdit = forwardRef((props, ref) => {
             <Button
                 startIcon={<SocialIcon {...itemProps} />}
                 onClick={() => {
-                    console.log(label);
+                    handleAddSocialItem(label);
+                    setSocialsGridOpen(false);
                 }}
+                key={idx}
             >
                 {label}
             </Button>
@@ -119,52 +234,47 @@ const ProfileCardEdit = forwardRef((props, ref) => {
         <>
             <Box className={classes.profileCardContainer} maxWidth="false" ref={ref}>
                 {firstName && lastName && (
-                    <Card className="profile-card">
-                        <CardMedia
-                            className="card-media"
-                            component="img"
-                            image="https://source.unsplash.com/random/600x300/?pattern"
-                            alt="random"
-                        />
-                        <CardContent className="card-content">
-                            <Container className="avatar-container">
-                                <Box className="box-outer">
-                                    <CircularProgress
-                                        variant="determinate"
-                                        size={styleProps.avatar.size}
-                                        thickness={styleProps.avatar.thickness}
-                                        value={styleProps.avatar.value}
-                                        color={styleProps.avatar.color}
-                                    />
-                                    <Box className="box-inner">
-                                        <Avatar className="avatar" alt="Remy Sharp" src={picture} />
-                                    </Box>
-                                </Box>
-                            </Container>
-
-                            <Stack>
-                                <TextField variant="standard" label="First name" defaultValue={firstName} />
-                                <TextField variant="standard" label="Last name" defaultValue={lastName} />
-                                <TextField variant="standard" label="Summary" defaultValue={summary} />
-                            </Stack>
-
-                            <RenderSocialItemsList />
-                        </CardContent>
+                    <ProfileCard>
+                        <ProfileCardMedia imageSrc={background || picture} />
+                        <ProfileCardContent className="card-content">
+                            <ProfileCardAvatar styleProps={styleProps} picture={picture} />
+                            <ProfileCardInputFields inputFields={inputFields} />
+                            <ProfileCardSocialItems
+                                socialItemInputs={socialItemInputs}
+                                onInputChange={handleUpdateField}
+                                onInputClick={handleDeleteField}
+                            />
+                        </ProfileCardContent>
                         <CardActions className="card-actions edit-card">
                             <Grid container spacing={2}>
                                 <Grid item xs={12}>
-                                    <Button fullWidth variant="outlined" color="primary" onClick={handleAddSocialItem} disableElevation>
+                                    <Button
+                                        fullWidth
+                                        variant="outlined"
+                                        color="primary"
+                                        onClick={() => {
+                                            setSocialsGridOpen(true);
+                                        }}
+                                        disableElevation
+                                    >
                                         Add social item
                                     </Button>
                                 </Grid>
                                 <Grid item xs={12}>
-                                    <Button fullWidth variant="contained" color="primary" disableElevation>
+                                    <Button
+                                        fullWidth
+                                        variant="contained"
+                                        color="primary"
+                                        disableElevation
+                                        onClick={handleSubmit}
+                                        sx={{ display: pendingSave }}
+                                    >
                                         Save
                                     </Button>
                                 </Grid>
                             </Grid>
                         </CardActions>
-                    </Card>
+                    </ProfileCard>
                 )}
             </Box>
             <Modal
@@ -180,5 +290,8 @@ const ProfileCardEdit = forwardRef((props, ref) => {
         </>
     );
 });
+
+// this fixes eslint error 'Component definition is missing display name'
+ProfileCardEdit.displayName = 'ProfileCardEdit';
 
 export default ProfileCardEdit;

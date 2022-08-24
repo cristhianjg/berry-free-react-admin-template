@@ -1,9 +1,7 @@
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -36,14 +34,14 @@ import { forwardRef } from 'react';
 
 import { profileCardVariants, profileCardStyles } from './styles';
 
+// New components
+import { ProfileCard } from './profile-card.component';
+import { ProfileCardMedia } from './profile-card-media.component';
+
 const useStyles = profileCardStyles;
 
-const ProfileCard = forwardRef((props, ref) => {
-    const { firstName, lastName, summary, picture, socialItems, variant } = props;
-
-    console.log('summary: ', summary);
-    console.log('variant: ', variant);
-    console.log('social items from card: ', socialItems);
+const ProfileCard_ = forwardRef((props, ref) => {
+    const { firstName, lastName, summary, picture, background, socialItems, variant } = props;
 
     const styleProps = profileCardVariants[variant] || profileCardVariants.xxs;
 
@@ -51,13 +49,8 @@ const ProfileCard = forwardRef((props, ref) => {
 
     return (
         <Container className={classes.profileCardContainer} maxWidth="false" ref={ref}>
-            <Card className="profile-card">
-                <CardMedia
-                    className="card-media"
-                    component="img"
-                    image="https://source.unsplash.com/random/600x300/?pattern"
-                    alt="random"
-                />
+            <ProfileCard>
+                <ProfileCardMedia imageSrc={background || picture} />
                 <CardContent className="card-content">
                     <Container className="avatar-container">
                         <Box className="box-outer">
@@ -69,7 +62,7 @@ const ProfileCard = forwardRef((props, ref) => {
                                 color={styleProps.avatar.color}
                             />
                             <Box className="box-inner">
-                                <Avatar className="avatar" alt="Remy Sharp" src={picture} />
+                                <Avatar className="avatar" alt="avatar" src={picture} />
                             </Box>
                         </Box>
                     </Container>
@@ -139,9 +132,12 @@ const ProfileCard = forwardRef((props, ref) => {
                         </Grid>
                     </Grid>
                 </CardActions>
-            </Card>
+            </ProfileCard>
         </Container>
     );
 });
 
-export default ProfileCard;
+// this fixes eslint error 'Component definition is missing display name'
+ProfileCard_.displayName = 'ProfileCard_';
+
+export default ProfileCard_;

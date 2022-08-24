@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import AddIcon from '@mui/icons-material/Add';
 import MainCard from 'ui-component/cards/MainCard';
 import ProfileCard from 'ui-component/profile-card';
-import { Link } from 'react-router-dom';
 
 const ProfileCardsList = () => {
     const [profileCards, setProfileCards] = useState([]);
@@ -20,7 +23,6 @@ const ProfileCardsList = () => {
             .then((response) => response.json())
             .then((response) => {
                 setProfileCards([...response.profiles]);
-                console.log('card fetch response : ', [...response.profiles]);
             })
             .catch((err) => console.error(err));
     }
@@ -31,6 +33,11 @@ const ProfileCardsList = () => {
 
     return (
         <MainCard title="Your cards">
+            <Box sx={{ pb: 2 }}>
+                <Button component={Link} to="/profile-cards/create" variant="outlined" startIcon={<AddIcon />}>
+                    New card
+                </Button>
+            </Box>
             <Grid container spacing={2}>
                 {profileCards.map((props) => (
                     <Grid item xs={3} key={props.id}>
