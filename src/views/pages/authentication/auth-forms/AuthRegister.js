@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 // material-ui
@@ -49,9 +49,7 @@ const FirebaseRegister = ({ ...others }) => {
     const [strength, setStrength] = useState(0);
     const [level, setLevel] = useState();
 
-    const googleHandler = async () => {
-        console.error('Register');
-    };
+    const navigate = useNavigate();
 
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword);
@@ -67,70 +65,60 @@ const FirebaseRegister = ({ ...others }) => {
         setLevel(strengthColor(temp));
     };
 
+    // to show password strength bar
     useEffect(() => {
         changePassword('123456');
     }, []);
 
+    const handleSubmit = async ({ name, email, password }) => {
+        console.log('Initial values : ', name, email, password);
+
+        const url = 'http://localhost:3022/api/v1/auth/user/register';
+
+        const body = {
+            name,
+            email,
+            password
+        };
+
+        await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then((response) => response.json())
+            .then(({ token, user }) => {
+                if (token) {
+                    navigate('/dashboard/default');
+                }
+            })
+            .catch((err) => console.error(err));
+    };
+
     return (
         <>
             <Grid container direction="column" justifyContent="center" spacing={2}>
-                <Grid item xs={12}>
-                    <AnimateButton>
-                        <Button
-                            variant="outlined"
-                            fullWidth
-                            onClick={googleHandler}
-                            size="large"
-                            sx={{
-                                color: 'grey.700',
-                                backgroundColor: theme.palette.grey[50],
-                                borderColor: theme.palette.grey[100]
-                            }}
-                        >
-                            <Box sx={{ mr: { xs: 1, sm: 2, width: 20 } }}>
-                                <img src={Google} alt="google" width={16} height={16} style={{ marginRight: matchDownSM ? 8 : 16 }} />
-                            </Box>
-                            Sign up with Google
-                        </Button>
-                    </AnimateButton>
-                </Grid>
-                <Grid item xs={12}>
-                    <Box sx={{ alignItems: 'center', display: 'flex' }}>
-                        <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
-                        <Button
-                            variant="outlined"
-                            sx={{
-                                cursor: 'unset',
-                                m: 2,
-                                py: 0.5,
-                                px: 7,
-                                borderColor: `${theme.palette.grey[100]} !important`,
-                                color: `${theme.palette.grey[900]}!important`,
-                                fontWeight: 500,
-                                borderRadius: `${customization.borderRadius}px`
-                            }}
-                            disableRipple
-                            disabled
-                        >
-                            OR
-                        </Button>
-                        <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
-                    </Box>
-                </Grid>
-                <Grid item xs={12} container alignItems="center" justifyContent="center">
+                <Grid item xs={12} container alignItems="center" justifyContent="left">
                     <Box sx={{ mb: 2 }}>
-                        <Typography variant="subtitle1">Sign up with Email address</Typography>
+                        <Typography variant="h2">Sign up</Typography>
                     </Box>
                 </Grid>
             </Grid>
 
             <Formik
                 initialValues={{
+                    name: '',
                     email: '',
                     password: '',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({
+                    name: Yup.string()
+                        .matches(/^[A-Za-z ]*$/, 'Please enter valid name')
+                        .min(2)
+                        .required('Name is required'),
                     email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
                     password: Yup.string().max(255).required('Password is required')
                 })}
@@ -140,6 +128,7 @@ const FirebaseRegister = ({ ...others }) => {
                             setStatus({ success: true });
                             setSubmitting(false);
                         }
+                        handleSubmit(values);
                     } catch (err) {
                         console.error(err);
                         if (scriptedRef.current) {
@@ -152,32 +141,37 @@ const FirebaseRegister = ({ ...others }) => {
             >
                 {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
                     <form noValidate onSubmit={handleSubmit} {...others}>
-                        <Grid container spacing={matchDownSM ? 0 : 2}>
-                            <Grid item xs={12} sm={6}>
+                        <Grid container spacing={matchDownSM ? 0 : 2} sx={{ display: 'none' }}>
+                            <Grid item xs={12} sm={12}>
                                 <TextField
                                     fullWidth
-                                    label="First Name"
+                                    label="Name"
                                     margin="normal"
-                                    name="fname"
+                                    name="name"
                                     type="text"
-                                    defaultValue=""
-                                    sx={{ ...theme.typography.customInput }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Last Name"
-                                    margin="normal"
-                                    name="lname"
-                                    type="text"
-                                    defaultValue=""
+                                    value={values.name}
+                                    onChange={handleChange}
                                     sx={{ ...theme.typography.customInput }}
                                 />
                             </Grid>
                         </Grid>
+                        <FormControl fullWidth error={Boolean(touched.name && errors.name)} sx={{ ...theme.typography.customInput }}>
+                            <InputLabel htmlFor="outlined-adornment-name-register">Name</InputLabel>
+                            <OutlinedInput
+                                id="outlined-adornment-name-register"
+                                type="name"
+                                value={values.name}
+                                name="name"
+                                onBlur={handleBlur}
+                                onChange={handleChange}
+                                inputProps={{}}
+                            />
+                            <FormHelperText error id="standard-weight-helper-text--register">
+                                {touched.name && errors.name ? errors.name : ' '}
+                            </FormHelperText>
+                        </FormControl>
                         <FormControl fullWidth error={Boolean(touched.email && errors.email)} sx={{ ...theme.typography.customInput }}>
-                            <InputLabel htmlFor="outlined-adornment-email-register">Email Address / Username</InputLabel>
+                            <InputLabel htmlFor="outlined-adornment-email-register">Email Address</InputLabel>
                             <OutlinedInput
                                 id="outlined-adornment-email-register"
                                 type="email"
@@ -187,11 +181,9 @@ const FirebaseRegister = ({ ...others }) => {
                                 onChange={handleChange}
                                 inputProps={{}}
                             />
-                            {touched.email && errors.email && (
-                                <FormHelperText error id="standard-weight-helper-text--register">
-                                    {errors.email}
-                                </FormHelperText>
-                            )}
+                            <FormHelperText error id="standard-weight-helper-text--register">
+                                {touched.email && errors.email ? errors.email : ' '}
+                            </FormHelperText>
                         </FormControl>
 
                         <FormControl
@@ -226,11 +218,9 @@ const FirebaseRegister = ({ ...others }) => {
                                 }
                                 inputProps={{}}
                             />
-                            {touched.password && errors.password && (
-                                <FormHelperText error id="standard-weight-helper-text-password-register">
-                                    {errors.password}
-                                </FormHelperText>
-                            )}
+                            <FormHelperText error id="standard-weight-helper-text-password-register">
+                                {touched.password && errors.password ? errors.password : ' '}
+                            </FormHelperText>
                         </FormControl>
 
                         {strength !== 0 && (
